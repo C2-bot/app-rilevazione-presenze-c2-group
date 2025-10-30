@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrazione Presenze - C2 Group</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        #reader {
+            width: 100%;
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .button-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .status {
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        .manual-input {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .manual-input.show {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .stats h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        .loader.show {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .config-section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #ffd700;
+        }
+
+        .config-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .config-section small {
+            color: #666;
+            display: block;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Registrazione Presenze</h1>
+            <p>C2 Group Event Management</p>
+        </div>
+
+        <div class="content">
+            <!-- Sezione Configurazione -->
+            <div class="config-section" id="configSection">
+                <h3>⚙️ Configurazione Richiesta</h3>
+                <div class="input-group">
+                    <label for="scriptUrl">URL Google Apps Script:</label>
+                    <input type="url" id="scriptUrl" placeholder="https://script.google.com/macros/s/..." />
+                    <small>Incolla qui l'URL del tuo script di deployment</small>
+                </div>
+                <button class="button button-primary" onclick="saveConfig()">Salva Configurazione</button>
+            </div>
+
+            <!-- Loader -->
+            <div class="loader" id="loader"></div>
+
+            <!-- Messaggio di stato -->
+            <div class="status" id="statusMessage"></div>
+
+            <!-- Area Scanner -->
+            <div id="scannerArea" style="display: none;">
+                <div id="reader"></div>
+                
+                <button class="button button-primary" id="startButton" onclick="startScanner()">
+                    📷 Avvia Scanner
+                </button>
+                
+                <button class="button button-secondary" id="stopButton" onclick="stopScanner()" style="display: none;">
+                    ⏹️ Ferma Scanner
+                </button>
+
+                <button class="button button-secondary" onclick="toggleManualInput()">
+                    ⌨️ Inserimento Manuale Email
+                </button>
+
+                <!-- Input manuale -->
+                <div class="manual-input" id="manualInput">
+                    <div class="input-group">
+                        <label for="emailInput">Email Partecipante:</label>
+                        <input type="email" id="emailInput" placeholder="esempio@email.com" />
+                    </div>
+                    <button class="button button-primary" onclick="registerManualEmail()">
+                        ✅ Registra Presenza
+                    </button>
+                </div>
+
+                <!-- Statistiche -->
+                <div class="stats">
+                    <h3>📊 Statistiche Sessione</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Presenze registrate:</span>
+                        <span class="stat-value" id="registeredCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Ultima registrazione:</span>
+                        <span class="stat-value" id="lastRegistered">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Libreria per QR Code Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <script>
+        let html5QrcodeScanner = null;
+        let isScanning = false;
+        let registeredCount = 0;
+        let scriptUrl = '';
+
+        // Carica configurazione al caricamento pagina
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('scriptUrl');
+            if (savedUrl) {
+                document.getElementById('scriptUrl').value = savedUrl;
+                scriptUrl = savedUrl;
+                document.getElementById('configSection').style.display = 'none';
+                document.getElementById('scannerArea').style.display = 'block';
+            }
+        };
+
+        // Salva configurazione
+        function saveConfig() {
+            const url = document.getElementById('scriptUrl').value.trim();
+            
+            if (!url) {
+                showStatus('Inserisci un URL valido', 'error');
+                return;
+            }
+
+            if (!url.includes('script.google.com')) {
+                showStatus('L\'URL deve essere un Google Apps Script', 'error');
+                return;
+            }
+
+            localStorage.setItem('scriptUrl', url);
+            scriptUrl = url;
+            
+            document.getElementById('configSection').style.display = 'none';
+            document.getElementById('scannerArea').style.display = 'block';
+            showStatus('✅ Configurazione salvata! Puoi iniziare a scansionare.', 'success');
+        }
+
+        // Avvia lo scanner
+        function startScanner() {
+            if (!scriptUrl) {
+                showStatus('Configura prima l\'URL dello script', 'error');
+                return;
+            }
+
+            if (isScanning) return;
+
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanError
+            ).then(() => {
+                isScanning = true;
+                document.getElementById('startButton').style.display = 'none';
+                document.getElementById('stopButton').style.display = 'block';
+                showStatus('📷 Scanner attivo. Inquadra il QR Code.', 'info');
+            }).catch(err => {
+                showStatus('❌ Errore avvio scanner: ' + err, 'error');
+            });
+        }
+
+        // Ferma lo scanner
+        function stopScanner() {
+            if (!isScanning || !html5QrcodeScanner) return;
+
+            html5QrcodeScanner.stop().then(() => {
+                isScanning = false;
+                document.getElementById('startButton').style.display = 'block';
+                document.getElementById('stopButton').style.display = 'none';
+                showStatus('⏹️ Scanner fermato', 'info');
+            }).catch(err => {
+                console.error('Errore stop scanner:', err);
+            });
+        }
+
+        // Callback successo scansione
+        function onScanSuccess(decodedText) {
+            // Ferma lo scanner temporaneamente
+            stopScanner();
+            
+            // Registra la presenza
+            registerAttendance(decodedText);
+        }
+
+        // Callback errore scansione (ignoriamo gli errori normali)
+        function onScanError(error) {
+            // Non mostriamo gli errori di scansione normali
+        }
+
+        // Registra presenza
+        async function registerAttendance(email) {
+            if (!scriptUrl) {
+                showStatus('Configura prima l\'URL dello script', 'error');
+                return;
+            }
+
+            showLoader(true);
+            showStatus('⏳ Registrazione in corso...', 'info');
+
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email.trim().toLowerCase() })
+                });
+
+                // Con no-cors non possiamo leggere la risposta, quindi assumiamo successo
+                // In produzione, dovresti usare CORS abilitato nello script
+                registeredCount++;
+                updateStats(email);
+                showStatus(`✅ Presenza registrata per: ${email}`, 'success');
+                
+                // Riavvia lo scanner dopo 2 secondi
+                setTimeout(() => {
+                    if (!isScanning) {
+                        startScanner();
+                    }
+                }, 2000);
+
+            } catch (error) {
+                showStatus('❌ Errore registrazione: ' + error.message, 'error');
+                console.error('Errore:', error);
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // Registra email manuale
+        function registerManualEmail() {
+            const email = document.getElementById('emailInput').value.trim();
+            
+            if (!email) {
+                showStatus('Inserisci un\'email valida', 'error');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                showStatus('Formato email non valido', 'error');
+                return;
+            }
+
+            registerAttendance(email);
+            document.getElementById('emailInput').value = '';
+        }
+
+        // Toggle input manuale
+        function toggleManualInput() {
+            const manualInput = document.getElementById('manualInput');
+            manualInput.classList.toggle('show');
+        }
+
+        // Mostra messaggio di stato
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = 'status status-' + type + ' show';
+            
+            // Nascondi dopo 5 secondi (tranne per info)
+            if (type !== 'info') {
+                setTimeout(() => {
+                    statusEl.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        // Mostra/nascondi loader
+        function showLoader(show) {
+            const loader = document.getElementById('loader');
+            if (show) {
+                loader.classList.add('show');
+            } else {
+                loader.classList.remove('show');
+            }
+        }
+
+        // Aggiorna statistiche
+        function updateStats(email) {
+            document.getElementById('registeredCount').textContent = registeredCount;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('it-IT');
+            document.getElementById('lastRegistered').textContent = timeStr;
+        }
+
+        // Gestisci pressione tasto Invio nell'input email
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('emailInput');
+            if (emailInput) {
+                emailInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        registerManualEmail();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
