@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrazione Presenze - C2 Group</title>
+    <title>[MASTRO] Evento C2 Group</title>
     <style>
         * {
             margin: 0;
@@ -36,6 +35,13 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
+        }
+
+        .header-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
         }
 
         .header h1 {
@@ -48,8 +54,95 @@
             opacity: 0.9;
         }
 
+        .user-info {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 12px;
+            opacity: 0.9;
+            text-align: right;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
         .content {
             padding: 30px;
+        }
+
+        /* LOGIN FORM */
+        .login-container {
+            display: block;
+        }
+
+        .login-container.hidden {
+            display: none;
+        }
+
+        .login-form {
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .login-icon {
+            text-align: center;
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #0074C5;
+        }
+
+        /* SCANNER AREA */
+        #scannerArea {
+            display: none;
+        }
+
+        #scannerArea.show {
+            display: block;
         }
 
         #reader {
@@ -74,13 +167,13 @@
         }
 
         .button-primary {
-            background: linear-gradient(135deg, #FF8C00 0%, #FF6B00 100%);
+            background: linear-gradient(135deg, #F55D3E 0%, #E54D2E 100%);
             color: white;
         }
 
         .button-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
+            box-shadow: 0 10px 20px rgba(245, 93, 62, 0.4);
         }
 
         .button-primary:disabled {
@@ -157,31 +250,6 @@
             display: block;
         }
 
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #0074C5;
-        }
-
         .stats {
             background: #f8f9fa;
             padding: 20px;
@@ -236,26 +304,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        .config-section {
-            background: #fff9e6;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px solid #ffd700;
-        }
-
-        .config-section h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #856404;
-        }
-
-        .config-section small {
-            color: #666;
-            display: block;
-            margin-top: 5px;
-        }
-
         @media (max-width: 480px) {
             .header h1 {
                 font-size: 20px;
@@ -264,71 +312,104 @@
             .content {
                 padding: 20px;
             }
+
+            .user-info {
+                font-size: 10px;
+            }
+
+            .header-logo {
+                max-width: 150px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <div class="user-info" id="userInfo" style="display: none;">
+                <div>👤 <span id="currentUser"></span></div>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+            <img src="logo-bianco.png" alt="C2 Group" class="header-logo">
             <h1>[MASTRO] Evento C2 Group</h1>
             <p>App di Rilevazione Presenze</p>
         </div>
 
         <div class="content">
-            <!-- Sezione Configurazione -->
-            <div class="config-section" id="configSection">
-                <h3>⚙️ Configurazione Richiesta</h3>
-                <div class="input-group">
-                    <label for="scriptUrl">URL Google Apps Script:</label>
-                    <input type="url" id="scriptUrl" placeholder="https://script.google.com/macros/s/..." />
-                    <small>Incolla qui l'URL del tuo script di deployment</small>
+            <!-- LOGIN SECTION -->
+            <div class="login-container" id="loginContainer">
+                <div class="login-form">
+                    <div class="login-icon">🔐</div>
+                    <h2 class="login-title">Accesso Operatori</h2>
+                    
+                    <div class="input-group">
+                        <label for="loginUsername">👤 Username (Email)</label>
+                        <input type="email" id="loginUsername" placeholder="esempio@c2group.it" autocomplete="username">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="loginPassword">🔒 Password</label>
+                        <input type="password" id="loginPassword" placeholder="Inserisci password" autocomplete="current-password">
+                    </div>
+
+                    <button class="button button-primary" onclick="handleLogin()">
+                        🔓 Accedi
+                    </button>
+
+                    <div class="status" id="loginStatus"></div>
                 </div>
-                <button class="button button-primary" onclick="saveConfig()">Salva Configurazione</button>
             </div>
 
-            <!-- Loader -->
-            <div class="loader" id="loader"></div>
+            <!-- SCANNER SECTION (Hidden by default) -->
+            <div id="scannerArea">
+                <!-- Loader -->
+                <div class="loader" id="loader"></div>
 
-            <!-- Messaggio di stato -->
-            <div class="status" id="statusMessage"></div>
+                <!-- Messaggio di stato -->
+                <div class="status" id="statusMessage"></div>
 
-            <!-- Area Scanner -->
-            <div id="scannerArea" style="display: none;">
-                <div id="reader"></div>
-                
-                <button class="button button-primary" id="startButton" onclick="startScanner()">
-                    📷 Avvia Scanner
-                </button>
-                
-                <button class="button button-secondary" id="stopButton" onclick="stopScanner()" style="display: none;">
-                    ⏹️ Ferma Scanner
-                </button>
-
-                <button class="button button-secondary" onclick="toggleManualInput()">
-                    ⌨️ Inserimento Manuale Email
-                </button>
-
-                <!-- Input manuale -->
-                <div class="manual-input" id="manualInput">
-                    <div class="input-group">
-                        <label for="emailInput">Email Partecipante:</label>
-                        <input type="email" id="emailInput" placeholder="esempio@email.com" />
-                    </div>
-                    <button class="button button-primary" onclick="registerManualEmail()">
-                        ✅ Registra Presenza
+                <!-- Area Scanner -->
+                <div id="scannerControls">
+                    <div id="reader"></div>
+                    
+                    <button class="button button-primary" id="startButton" onclick="startScanner()">
+                        📷 Avvia Scanner
                     </button>
-                </div>
+                    
+                    <button class="button button-secondary" id="stopButton" onclick="stopScanner()" style="display: none;">
+                        ⏹️ Ferma Scanner
+                    </button>
 
-                <!-- Statistiche -->
-                <div class="stats">
-                    <h3>📊 Statistiche Sessione</h3>
-                    <div class="stat-item">
-                        <span class="stat-label">Presenze registrate:</span>
-                        <span class="stat-value" id="registeredCount">0</span>
+                    <button class="button button-secondary" onclick="toggleManualInput()">
+                        ⌨️ Inserimento Manuale Email
+                    </button>
+
+                    <!-- Input manuale -->
+                    <div class="manual-input" id="manualInput">
+                        <div class="input-group">
+                            <label for="emailInput">Email Partecipante:</label>
+                            <input type="email" id="emailInput" placeholder="esempio@email.com" />
+                        </div>
+                        <button class="button button-primary" onclick="registerManualEmail()">
+                            ✅ Registra Presenza
+                        </button>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Ultima registrazione:</span>
-                        <span class="stat-value" id="lastRegistered">-</span>
+
+                    <!-- Statistiche -->
+                    <div class="stats">
+                        <h3>📊 Statistiche Sessione</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Presenze registrate:</span>
+                            <span class="stat-value" id="registeredCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Ultima registrazione:</span>
+                            <span class="stat-value" id="lastRegistered">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Operatore:</span>
+                            <span class="stat-value" id="operatorName">-</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -339,45 +420,138 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script>
+        // ========== CONFIGURAZIONE LOGIN ==========
+        const VALID_USERS = {
+            "marketing@c2group.it": "evento123",
+            "enrico.demarco@c2group.it": "evento123",
+            "michele.mondoni@c2group.it": "evento123",
+            "giovanni.ginevra@c2group.it": "evento123",
+            "mattia.rossi@c2group.it": "evento123",
+            "nicola.roli@c2group.it": "evento123"
+        };
+
+        const TIMEOUT_MINUTES = 240; // 240 minuti = 4 ore
+        // ==========================================
+
         let html5QrcodeScanner = null;
         let isScanning = false;
         let registeredCount = 0;
-        let scriptUrl = '';
+        let scriptUrl = 'https://script.google.com/macros/s/AKfycbw4eawqeiGbidF-a4O1ANHY_iofNQIOnE-7vF2ZAZBcjHOC9qKsoCggMkgJVN06Crno-Q/exec';
+        let currentUser = '';
+        let lastActivityTime = Date.now();
+        let timeoutInterval = null;
 
-        // Carica configurazione al caricamento pagina
+        // ========== GESTIONE LOGIN ==========
+
         window.onload = function() {
-            const savedUrl = localStorage.getItem('scriptUrl');
-            if (savedUrl) {
-                document.getElementById('scriptUrl').value = savedUrl;
-                scriptUrl = savedUrl;
-                document.getElementById('configSection').style.display = 'none';
-                document.getElementById('scannerArea').style.display = 'block';
+            // Controlla se c'è una sessione salvata
+            const savedUser = localStorage.getItem('loggedUser');
+            const savedTime = localStorage.getItem('loginTime');
+
+            if (savedUser && savedTime) {
+                const elapsedMinutes = (Date.now() - parseInt(savedTime)) / (1000 * 60);
+                
+                if (elapsedMinutes < TIMEOUT_MINUTES) {
+                    // Sessione valida
+                    currentUser = savedUser;
+                    showScanner();
+                    startTimeoutMonitor();
+                } else {
+                    // Sessione scaduta
+                    logout();
+                }
             }
         };
 
-        // Salva configurazione
-        function saveConfig() {
-            const url = document.getElementById('scriptUrl').value.trim();
-            
-            if (!url) {
-                showStatus('Inserisci un URL valido', 'error');
+        function handleLogin() {
+            const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showLoginStatus('Inserisci username e password', 'error');
                 return;
             }
 
-            if (!url.includes('script.google.com')) {
-                showStatus('L\'URL deve essere un Google Apps Script', 'error');
-                return;
+            if (VALID_USERS[username] && VALID_USERS[username] === password) {
+                // Login riuscito
+                currentUser = username;
+                localStorage.setItem('loggedUser', username);
+                localStorage.setItem('loginTime', Date.now().toString());
+                
+                showLoginStatus('✅ Accesso effettuato!', 'success');
+                
+                setTimeout(() => {
+                    showScanner();
+                    startTimeoutMonitor();
+                }, 1000);
+            } else {
+                showLoginStatus('❌ Credenziali non valide', 'error');
             }
-
-            localStorage.setItem('scriptUrl', url);
-            scriptUrl = url;
-            
-            document.getElementById('configSection').style.display = 'none';
-            document.getElementById('scannerArea').style.display = 'block';
-            showStatus('✅ Configurazione salvata! Puoi iniziare a scansionare.', 'success');
         }
 
-        // Avvia lo scanner
+        function showScanner() {
+            document.getElementById('loginContainer').classList.add('hidden');
+            document.getElementById('scannerArea').classList.add('show');
+            document.getElementById('scannerControls').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('currentUser').textContent = currentUser;
+            document.getElementById('operatorName').textContent = currentUser;
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedUser');
+            localStorage.removeItem('loginTime');
+            clearInterval(timeoutInterval);
+            
+            // Reset interfaccia
+            document.getElementById('loginContainer').classList.remove('hidden');
+            document.getElementById('scannerArea').classList.remove('show');
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            if (isScanning) {
+                stopScanner();
+            }
+            
+            currentUser = '';
+            showLoginStatus('Logout effettuato', 'info');
+        }
+
+        function startTimeoutMonitor() {
+            // Aggiorna timestamp attività
+            document.addEventListener('click', updateActivity);
+            document.addEventListener('keypress', updateActivity);
+            document.addEventListener('touchstart', updateActivity);
+
+            // Controlla timeout ogni minuto
+            timeoutInterval = setInterval(() => {
+                const elapsedMinutes = (Date.now() - lastActivityTime) / (1000 * 60);
+                
+                if (elapsedMinutes >= TIMEOUT_MINUTES) {
+                    alert('Sessione scaduta per inattività. Effettua nuovamente il login.');
+                    logout();
+                }
+            }, 60000); // Controlla ogni minuto
+        }
+
+        function updateActivity() {
+            lastActivityTime = Date.now();
+            localStorage.setItem('loginTime', Date.now().toString());
+        }
+
+        function showLoginStatus(message, type) {
+            const statusEl = document.getElementById('loginStatus');
+            statusEl.textContent = message;
+            statusEl.className = 'status status-' + type + ' show';
+            
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // ========== SCANNER ==========
+
         function startScanner() {
             if (!scriptUrl) {
                 showStatus('Configura prima l\'URL dello script', 'error');
@@ -409,7 +583,6 @@
             });
         }
 
-        // Ferma lo scanner
         function stopScanner() {
             if (!isScanning || !html5QrcodeScanner) return;
 
@@ -423,26 +596,24 @@
             });
         }
 
-        // Callback successo scansione
         function onScanSuccess(decodedText) {
-            // Ferma lo scanner temporaneamente
             stopScanner();
-            
-            // Registra la presenza
             registerAttendance(decodedText);
         }
 
-        // Callback errore scansione (ignoriamo gli errori normali)
         function onScanError(error) {
-            // Non mostriamo gli errori di scansione normali
+            // Ignora errori normali di scansione
         }
 
-        // Registra presenza
+        // ========== REGISTRAZIONE PRESENZE ==========
+
         async function registerAttendance(email) {
             if (!scriptUrl) {
                 showStatus('Configura prima l\'URL dello script', 'error');
                 return;
             }
+
+            updateActivity(); // Aggiorna timestamp attività
 
             showLoader(true);
             showStatus('⏳ Registrazione in corso...', 'info');
@@ -454,16 +625,16 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email: email.trim().toLowerCase() })
+                    body: JSON.stringify({ 
+                        email: email.trim().toLowerCase(),
+                        operator: currentUser
+                    })
                 });
 
-                // Con no-cors non possiamo leggere la risposta, quindi assumiamo successo
-                // In produzione, dovresti usare CORS abilitato nello script
                 registeredCount++;
                 updateStats(email);
                 showStatus(`✅ Presenza registrata per: ${email}`, 'success');
                 
-                // Riavvia lo scanner dopo 2 secondi
                 setTimeout(() => {
                     if (!isScanning) {
                         startScanner();
@@ -478,7 +649,6 @@
             }
         }
 
-        // Registra email manuale
         function registerManualEmail() {
             const email = document.getElementById('emailInput').value.trim();
             
@@ -496,19 +666,18 @@
             document.getElementById('emailInput').value = '';
         }
 
-        // Toggle input manuale
         function toggleManualInput() {
             const manualInput = document.getElementById('manualInput');
             manualInput.classList.toggle('show');
         }
 
-        // Mostra messaggio di stato
+        // ========== UI HELPERS ==========
+
         function showStatus(message, type) {
             const statusEl = document.getElementById('statusMessage');
             statusEl.textContent = message;
             statusEl.className = 'status status-' + type + ' show';
             
-            // Nascondi dopo 5 secondi (tranne per info)
             if (type !== 'info') {
                 setTimeout(() => {
                     statusEl.classList.remove('show');
@@ -516,7 +685,6 @@
             }
         }
 
-        // Mostra/nascondi loader
         function showLoader(show) {
             const loader = document.getElementById('loader');
             if (show) {
@@ -526,7 +694,6 @@
             }
         }
 
-        // Aggiorna statistiche
         function updateStats(email) {
             document.getElementById('registeredCount').textContent = registeredCount;
             const now = new Date();
@@ -534,7 +701,8 @@
             document.getElementById('lastRegistered').textContent = timeStr;
         }
 
-        // Gestisci pressione tasto Invio nell'input email
+        // ========== EVENT LISTENERS ==========
+
         document.addEventListener('DOMContentLoaded', function() {
             const emailInput = document.getElementById('emailInput');
             if (emailInput) {
@@ -544,7 +712,17 @@
                     }
                 });
             }
+
+            const loginPassword = document.getElementById('loginPassword');
+            if (loginPassword) {
+                loginPassword.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleLogin();
+                    }
+                });
+            }
         });
     </script>
 </body>
 </html>
+
