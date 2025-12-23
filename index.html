@@ -829,7 +829,6 @@
             try {
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -839,9 +838,16 @@
                     })
                 });
 
-                registeredCount++;
-                updateStats(email);
-                showStatus(`✅ Presenza registrata per: ${email}`, 'success');
+                // Leggi la risposta
+                const result = await response.json();
+
+                if (result.success) {
+                    registeredCount++;
+                    updateStats(email);
+                    showStatus(`✅ Presenza registrata per: ${email}`, 'success');
+                } else {
+                    showStatus(`⚠️ ${result.message}`, 'warning');
+                }
                 
                 setTimeout(() => {
                     if (!isScanning) {
